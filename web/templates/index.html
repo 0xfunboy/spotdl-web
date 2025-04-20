@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My spotDL webapp</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212; /* Dark background */
+            color: #fff;
+        }
+        header {
+            background: linear-gradient(135deg, #1DB954, #191414); /* Spotify-like gradient */
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        nav {
+            background-color: #282828; /* Dark grey */
+            padding: 15px 0;
+            text-align: center;
+            border-bottom: 1px solid #555;
+        }
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        nav ul li {
+            display: inline-block;
+            margin: 0 15px;
+        }
+        @media (max-width: 600px) {
+            nav ul li {
+                display: block; /* Stack links vertically */
+                margin: 10px 0;
+            }
+        }
+        nav a {
+            color: #b3b3b3; /* Light grey text */
+            text-transform: uppercase;
+            font-weight: bold;
+            transition: color 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        nav a:hover {
+            color: #1DB954; /* Green on hover */
+        }
+        main {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        #search-results {
+            margin-top: 20px;
+        }
+
+        #search-results ul {
+            list-style: none;
+            padding: 0;
+        }
+        #login-view {
+            display: none;
+            flex-direction: column;
+            background-color: #282828;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        #login-view input,
+        #login-view button {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: none;
+            border-radius: 3px;
+            background-color: #333;
+            color: #fff;
+        }
+
+        #login-view button {
+            background-color: #1DB954;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #login-view button:hover {
+            background-color: #1ed760;
+        }
+
+        #downloads-view,
+        #settings-view {
+            display: none;
+        }
+
+        .download-section {
+            margin-bottom: 20px;
+        }
+
+        .download-list {
+            list-style: none;
+            padding: 0;
+        }
+        .hidden {
+            display: none !important;
+        }
+        #player-container {
+            background-color: #282828;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (max-width: 600px) {
+            main {
+                padding: 10px;
+                text-align: center;
+                position: relative;
+                bottom: auto;
+                width: 100%;
+            }
+            #player-container audio {
+                width: 100%;
+            }
+        }
+        /* Form styles */
+        form input[type="text"],
+        form input[type="password"] {
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #555;
+            border-radius: 3px;
+            background-color: #333;
+            color: #fff;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        form button[type="submit"] {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 3px;
+            background-color: #1DB954;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        form button[type="submit"]:hover {
+            background-color: #1ed760;
+        }
+
+        /*Search view */
+        #search-view{
+            display: none;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        /* Settings */
+        #settings-view {
+            width: 100%;
+            background-color: #282828;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        #settings-view input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #555;
+            border-radius: 3px;
+            background-color: #333;
+            color: #fff;
+            box-sizing: border-box;
+        }
+
+        #settings-view button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 3px;
+            background-color: #1DB954;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #settings-view button:hover {
+            background-color: #1ed760;
+        }
+
+        /* Downloads */
+        #downloads-view {
+            width: 100%;
+        }
+
+        #downloads-view h2 {
+            margin-top: 20px;
+            border-bottom: 1px solid #555;
+            padding-bottom: 5px;
+        }
+
+        /*General view */
+        main > div {
+            background-color: #282828;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            padding: 20px;
+        }
+        
+        main > div h2{
+            color: #fff;
+            text-decoration: none;
+        }
+        /* Albums and songs*/
+        .album {
+            background-color: #333;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .album:hover {
+            background-color: #444;
+        }
+
+        #songs div {
+            background-color: #333;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 3px;
+        }
+        #albums, #songs{
+            display: flex;
+            flex-direction: column;
+            width: 50%;
+        }
+        @media (max-width: 600px) {
+            #albums, #songs { width: 100%; }
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        <h1>SpotDL</h1>
+    </header>
+    <nav>
+        <nav>
+            <ul>
+                <li><a href="#">Library</a></li>
+                <li><a href="#">Search</a></li>
+                <li><a href="#">Downloads</a></li>
+                <li><a href="#">Settings</a></li>
+                <li><a href="#">Login</a></li>
+            </ul>
+        </nav>
+    </nav>
+    <main>
+        <div id="search-view">
+            <form id="search-form">
+                <input type="text" id="search-input" placeholder="Search for music...">
+                <button type="submit">Search</button>
+            </form>
+            <div id="search-results"></div>
+        </div>
+        <div id="albums">
+            <!-- Albums will be displayed here -->
+        </div>
+        <div id="songs">
+            <!-- Songs of the selected album will be displayed here -->
+        </div>
+        <div id="downloads-view">
+            <h2>Active Downloads</h2>
+            <div class="download-section" id="active-downloads">
+                <!-- Active downloads will go here -->
+            </div>
+            <h2>Completed Downloads</h2>
+            <div class="download-section" id="completed-downloads">
+                <!-- Completed downloads will go here -->
+            </div>
+        </div>
+        <div id="settings-view">
+            <input type="text" id="download-folder" placeholder="Download Folder">
+            <input type="text" id="music-quality" placeholder="Music Quality">
+            <button id="save-settings">Save Settings</button>
+        </div>
+        <div id="login-view">
+            <form id="login-form">
+                <input type="text" id="username" placeholder="Username">
+                <input type="password" id="password" placeholder="Password">
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2024 spotDL</p>
+    </footer>
+    <div id="player-container">
+        <audio controls></audio>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchForm = document.getElementById('search-form');
+            const searchInput = document.getElementById('search-input');
+            const searchResults = document.getElementById('search-results');
+
+            searchForm.addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent the default form submission
+                const searchTerm = searchInput.value;
+
+                searchResults.innerHTML = '';
+                const results = [];
+
+                 //Search in albums
+                libraryData.forEach(albumData => {
+                  if (albumData.album.toLowerCase().includes(searchTerm.toLowerCase())) {
+                      results.push(albumData.album);
+                  }
+
+                  // Search in songs
+                  albumData.songs.forEach(song => {
+                      if (song.toLowerCase().includes(searchTerm.toLowerCase())) {
+                          results.push(song);
+                      }
+                  });
+                });
+
+
+                const ul = document.createElement('ul');
+                results.forEach(result => {
+                    const li = document.createElement('li');
+                    li.textContent = result;
+                    ul.appendChild(li);
+                });
+                searchResults.appendChild(ul)});
+            // Login logic
+            const loginForm = document.getElementById('login-form');
+            loginForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                if ((username === 'user1' && password === 'password1') || (username === 'user2' && password === 'password2')) {
+                    alert('Login success');
+                    // You could redirect or update the UI here
+                } else {
+                    alert('Login failed');
+                }
+                // Clear the form
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+            });
+
+            // Settings logic
+            const settingsView = document.getElementById('settings-view');
+            const downloadFolderInput = document.getElementById('download-folder');
+            const musicQualityInput = document.getElementById('music-quality');
+            const saveSettingsButton = document.getElementById('save-settings');
+            //Set default values
+            downloadFolderInput.value = "Downloads";
+            musicQualityInput.value = "High";
+
+            saveSettingsButton.addEventListener('click', function() {
+                alert('Settings saved');
+                // You could add more logic to actually save the settings here
+                // For now, just clear the form
+                downloadFolderInput.value = "Downloads";
+                musicQualityInput.value = "High";
+            });
+
+            // Library data (albums and songs)
+            const libraryData = [
+                {
+                    album: 'Album 1',
+                    songs: ['Song 1.1', 'Song 1.2', 'Song 1.3']
+                },
+                {
+                    album: 'Album 2',
+                    songs: ['Song 2.1', 'Song 2.2', 'Song 2.3']
+                },
+                {
+                    album: 'Album 3',
+                    songs: ['Song 3.1', 'Song 3.2', 'Song 3.3']
+                }
+            ];
+            const albumsDiv = document.getElementById('albums');
+            const songsDiv = document.getElementById('songs');
+
+            // Function to display albums
+            function displayAlbums() {
+                libraryData.forEach(albumData => {
+                    const albumElement = document.createElement('div');
+                    albumElement.textContent = albumData.album;
+                    albumElement.classList.add('album'); // Add a class for styling
+                    albumElement.addEventListener('click', () => displaySongs(albumData.songs));
+                    albumsDiv.appendChild(albumElement);
+                });
+            }
+            // Function to display songs
+            function displaySongs(songs) {
+                songsDiv.innerHTML = ''; // Clear previous songs
+                songs.forEach(song => {
+                    const songElement = document.createElement('div');
+                    songElement.textContent = song;
+                    songsDiv.appendChild(songElement);
+                });
+            }
+
+            // Add event listeners to the nav links
+            const navLinks = document.querySelectorAll('nav a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(event) {
+                    event.preventDefault(); // Prevent the default link behavior
+                    const target = this.textContent;
+                    // Hide all views
+                    const views = document.querySelectorAll('main > div');
+                    views.forEach(view => {
+                        view.classList.add('hidden');
+                    });
+
+                    // Show the target view
+                    switch (target) {
+                        case 'Library':
+                            displayAlbums();
+                        case 'Library':
+                            document.getElementById('albums').classList.remove('hidden');
+                            document.getElementById('songs').classList.remove('hidden');
+                            break;
+                        case 'Search':
+                            document.getElementById('search-view').classList.remove('hidden');
+                            break;
+                        case 'Downloads':
+                            document.getElementById('downloads-view').classList.remove('hidden');
+                            break;
+                        case 'Settings':
+                            document.getElementById('settings-view').classList.remove('hidden');
+                            break;
+                        case 'Login':
+                            document.getElementById('login-view').classList.remove('hidden');
+                            break;
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
